@@ -479,7 +479,7 @@ pieceValue(wq, 5).
 pieceValue(bq, -5).
 
 alphaBeta(Player, Alpha, Beta, Board, NextMove, Eval, Depth) :-
-	Depth < 35,
+	Depth < 40,
 	NewDepth is Depth + 1,
 	listAvailableMoves(Board, Player, Moves),
 	bestBounded(Player, Alpha, Beta, Moves, NextMove, Eval, NewDepth), !.
@@ -563,23 +563,19 @@ play:-
     boardPrint(Board),
     makeMove(Player, Board).
 
-makeMove(white, Board) :-
+makeMove(white, Board, NewBoard, Eval, NextMove):-
     alphaBeta(white, -1000, 1000, Board, NextMove, Eval, 0),    
     nonvar(NextMove), !,
-    write('White (computer) turn to play.'), nl,
-    write('Move evaluation: '), write(Eval), nl,
-    printMove(NextMove),                                    
     boardMove(NextMove, NewBoard),
-    abolish(current/2),                                      
-    assert(current(black, NewBoard)),                        
-    play.
+	  abolish(current/2),                                      
+    assert(current(black, NewBoard)).                 
 	
-makeMove(white, Board):-
+makeMove(white, Board, _, _, _, _):-
     listAvailableMoves(Board, black, _), !,
     write('Black (human) wins the game.'),nl.
-makeMove(white,_):-
+makeMove(white,_, _, _, _, _):-
     write('Draw.'),nl.
-makeMove(black,Board) :-
+makeMove(black,Board, _, _, _, _) :-
     listAvailableMoves(Board, black, Moves), !,
     write('Black (human) turn to play.'), nl,
     printAllMoves(1, Moves),
@@ -589,10 +585,13 @@ makeMove(black,Board) :-
     dechain(Move,Move1),
     boardMove(Move1,NewBoard),
     abolish(current/2),
-    assert(current(white,NewBoard)),
-    play.
-makeMove(black,Board) :-
+    assert(current(white,NewBoard)).
+makeMove(black,Board, _, _, _, _ ) :-
     listAvailableMoves(Board, white, _), !,
     write('White (computer) wins the game.'),nl.
-makeMove(black,_):-
+makeMove(black,_, _, _, _, _):-
     write('Draw.'), nl.
+
+movePiece(black,Board, Move, NewBoard) :-
+	dechain(Move,Move1),
+  boardMove(Move1,NewBoard).
